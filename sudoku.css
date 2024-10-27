@@ -337,6 +337,7 @@ body {
     touch-action: manipulation;
     vertical-align: bottom;
     width: 190px;
+    margin: 10px 10px 10px 10px;
   }
   
   .button-69:hover {
@@ -349,6 +350,7 @@ body {
       height: 55px;
       line-height: 55px;
       width: 150px;
+      margin: 5px 5px 5px 5px;
     }
   }
 
