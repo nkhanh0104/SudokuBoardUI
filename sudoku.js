@@ -2,6 +2,15 @@
 
 //main
 $(function () {
+  // Remove all data in grid when page is loaded or new game
+  $.ajax({
+    url: "https://localhost:7289/api/Board",
+    type: "DELETE",
+    contentType: "application/json",
+    success: function (data) {
+      console.log(data);
+    },
+  });
   //game
   var game = new Sudoku({
     id: "sudoku_container",
@@ -25,15 +34,6 @@ $(function () {
   $("#sudoku_menu .restart").on("click", function () {
     game.init().run();
     $("#sudoku_menu").removeClass("open-sidebar");
-    // Remove all data in grid when new game
-    $.ajax({
-      url: "https://localhost:7289/api/Board",
-      type: "DELETE",
-      contentType: "application/json",
-      success: function (data) {
-        console.log(ko.toJSON(data));
-      },
-    });
   });
 });
 
@@ -552,14 +552,12 @@ Sudoku.prototype.validate = function (value) {
       group_cells_exists.length > 1)
   ) {
     $(this.cell).addClass("notvalid");
-    // this section to handle call api save value to db for case invalid
   } else {
     $(this.cell).removeClass("notvalid");
     // check to make sure when user click on a cell then click on X button after that click Solve button will not add css valid
     if (value != 0) {
       $(this.cell).addClass("valid");
       isValid = true;
-      // this section to handle call api save value to db valid
     }
   }
 
@@ -572,15 +570,18 @@ Sudoku.prototype.validate = function (value) {
     dateTime: new Date().toJSON(),
   };
 
-  $.ajax({
-    url: "https://localhost:7289/api/Board",
-    type: "POST",
-    data: JSON.stringify(oData),
-    contentType: "application/json",
-    success: function (data) {
-      console.log(ko.toJSON(data));
-    },
-  });
+  // add more condition only call api when value != 0 to avoid the user click on X button then click Solve button
+  if (value != 0) {
+    $.ajax({
+      url: "https://localhost:7289/api/Board",
+      type: "POST",
+      data: JSON.stringify(oData),
+      contentType: "application/json",
+      success: function (data) {
+        console.log(data);
+      },
+    });
+  }
 
   //recalculate completed cells
   this.cellsComplete = $(
@@ -615,7 +616,7 @@ Sudoku.prototype.run = function () {
     type: "DELETE",
     contentType: "application/json",
     success: function (data) {
-      console.log(ko.toJSON(data));
+      console.log(data);
     },
   });
   this.status = this.RUNNING;
