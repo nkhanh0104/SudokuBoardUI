@@ -2,15 +2,6 @@
 
 //main
 $(function () {
-  // Remove all data in grid when page is loaded or new game
-  $.ajax({
-    url: "https://localhost:7289/api/Board",
-    type: "DELETE",
-    contentType: "application/json",
-    success: function (data) {
-      console.log(data);
-    },
-  });
   //game
   var game = new Sudoku({
     id: "sudoku_container",
@@ -233,6 +224,10 @@ Sudoku.prototype.drawBoard = function () {
         this.secondsElapsed +
         "</span>",
     );
+  var sudoku_grid = $("<div></div>").addClass("dx-viewport")
+    .html(`<div class="demo-container">
+            <div id="gridContainer"></div>
+        </div>`);
 
   $("#" + this.id).empty();
 
@@ -304,6 +299,7 @@ Sudoku.prototype.drawBoard = function () {
   sudoku_console_container.appendTo("#" + this.id).hide();
   sudoku_console.appendTo(sudoku_console_container);
   sudoku_solve_button.appendTo("#" + this.id);
+  sudoku_grid.appendTo("#" + this.id);
   sudoku_statistics.appendTo("#" + this.id);
   sudoku_gameover.appendTo("#" + this.id).hide();
 
@@ -579,6 +575,75 @@ Sudoku.prototype.validate = function (value) {
       contentType: "application/json",
       success: function (data) {
         console.log(data);
+        // Call API to get data from DB to load in DxDatagrid
+        $.ajax({
+          url: "https://localhost:7289/api/Board",
+          type: "GET",
+          contentType: "application/json",
+          success: function (getData) {
+            $("#gridContainer").dxDataGrid({
+              dataSource: getData,
+              keyExpr: "id",
+              showBorders: true,
+              selection: {
+                mode: "single",
+              },
+              paging: {
+                pageSize: 5,
+              },
+              pager: {
+                visible: true,
+                allowedPageSizes: [5, 10, 20, 50, "all"],
+                showPageSizeSelector: true,
+                showInfo: true,
+                showNavigationButtons: true,
+              },
+              columns: [
+                {
+                  dataField: "id",
+                  caption: "Id",
+                  alignment: "center",
+                },
+                {
+                  dataField: "row",
+                  caption: "Row",
+                  alignment: "center",
+                },
+                {
+                  dataField: "column",
+                  caption: "Column",
+                  alignment: "center",
+                },
+                {
+                  dataField: "value",
+                  caption: "Value",
+                  alignment: "center",
+                },
+                {
+                  dataField: "isValid",
+                  caption: "Is Valid",
+                  customizeText: function (cellInfo) {
+                    var text;
+                    if (cellInfo) {
+                      text = "Valid";
+                    } else {
+                      text = "Invalid";
+                    }
+                    return text;
+                  },
+                  alignment: "center",
+                },
+                {
+                  dataField: "dateTime",
+                  caption: "Action Date",
+                  dataType: "datetime",
+                  format: "dd/MM/yyyy hh:mm:ss",
+                  alignment: "center",
+                },
+              ],
+            });
+          },
+        });
       },
     });
   }
@@ -611,6 +676,7 @@ Sudoku.prototype.gameOver = function () {
   Run a new sudoku game
   */
 Sudoku.prototype.run = function () {
+  // Remove all data in grid when page is loaded
   $.ajax({
     url: "https://localhost:7289/api/Board",
     type: "DELETE",
